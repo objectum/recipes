@@ -1,4 +1,4 @@
-let doCache = window.NODE_ENV === "production";
+let doCache = true;
 
 // Имя кэша
 let CACHE_NAME = "my-pwa-cache";

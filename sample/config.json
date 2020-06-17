@@ -2,6 +2,8 @@
 	"code": "recipes",
 	"adminPassword": "D033E22AE348AEB5660FC2140AEC35850C4DA997",
 	"port": 3100,
+	"secret": "secret01",
+	"secretKey": "",
 	"database": {
 		"host": "127.0.0.1",
 		"port": 5432,
