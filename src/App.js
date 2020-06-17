@@ -85,13 +85,13 @@ class App extends Component {
 			version: process.env.REACT_APP_VERSION,
 			onCustomRender: this.onCustomRender,
 			onConnect: this.onConnect,
-			registration: true
+			registration: true,
+			username: "guest",
+			password: require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase ()
 		};
 		if (process.env.NODE_ENV === "development") {
 			props._username = "admin";
 			props._password = require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ();
-			props.__username = "guest";
-			props.__password = require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase ();
 			props.username = "samortsev@gmail.com";
 			props.password = require ("crypto").createHash ("sha1").update ("1").digest ("hex").toUpperCase ();
 		}
