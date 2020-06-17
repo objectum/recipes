@@ -1,0 +1,52 @@
+body {
+    background-color: #fff;
+}
+.card {
+    width: 562px;
+}
+.card-photo {
+    width: 200px;
+}
+.card-info {
+    width: 352px;
+}
+.like {
+    width: 3em;
+}
+.card-icon {
+    width: 1.5em;
+    text-align: center;
+}
+.photo-text {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+.photo-text div {
+    position: absolute;
+}
+.photo-text p {
+    color: #fff;
+    position: relative;
+}
+.one-line-text {
+    white-space: nowrap; /* Отменяем перенос текста */
+    overflow: hidden; /* Обрезаем содержимое */
+    text-overflow: ellipsis;
+    padding: 5px; /* Поля */
+    background: #fff; /* Цвет фона */
+    position: relative; /* Относительное позиционирование */
+}
+.one-line-text::after {
+    content: ''; /* Выводим элемент */
+    position: absolute; /* Абсолютное позиционирование */
+    right: 0; top: 0; /* Положение элемента */
+    width: 40px; /* Ширина градиента*/
+    height: 100%; /* Высота родителя */
+    /* Градиент */
+    background: -moz-linear-gradient(left, rgba(255,255,255, 0.2), #fff 100%);
+    background: -webkit-linear-gradient(left, rgba(255,255,255, 0.2), #fff 100%);
+    background: -o-linear-gradient(left, rgba(255,255,255, 0.2), #fff 100%);
+    background: -ms-linear-gradient(left, rgba(255,255,255, 0.2), #fff 100%);
+    background: linear-gradient(to right, rgba(255,255,255, 0.2), #fff 100%);
+}

@@ -1,0 +1,185 @@
+{
+	"createModel": [
+		{
+			"name": "Рецепт",
+			"code": "recipe"
+		},
+		{
+			"parent": "t",
+			"name": "Рецепт",
+			"code": "recipe"
+		},
+		{
+			"parent": "t.recipe",
+			"name": "Фото",
+			"code": "photo"
+		},
+		{
+			"parent": "t.recipe",
+			"name": "Комментарий",
+			"code": "comment"
+		},
+		{
+			"parent": "t.recipe",
+			"name": "Лайк",
+			"code": "like"
+		}
+	],
+	"createProperty": [
+		{
+			"model": "recipe",
+			"name": "Наименование",
+			"code": "name",
+			"type": "String",
+			"notNull": 1
+		},
+		{
+			"model": "recipe",
+			"name": "Дата",
+			"code": "date",
+			"type": "Date",
+			"notNull": 1
+		},
+		{
+			"model": "recipe",
+			"name": "Способ приготовления",
+			"code": "cooking",
+			"type": "String",
+			"opts": {
+				"wysiwyg": true,
+				"rows": 15
+			}
+		},
+		{
+			"model": "t.recipe.photo",
+			"name": "Рецепт",
+			"code": "recipe",
+			"type": "recipe",
+			"notNull": 1,
+			"removeRule": "cascade"
+		},
+		{
+			"model": "t.recipe.photo",
+			"name": "Фото",
+			"code": "photo",
+			"type": "File",
+			"notNull": 1,
+			"opts": {
+				"image": {
+					"width": 200,
+					"height": 200,
+					"aspect": 1
+				}
+			}
+		},
+		{
+			"model": "t.recipe.photo",
+			"name": "Наименование",
+			"code": "name",
+			"type": "String"
+		},
+		{
+			"model": "recipe",
+			"name": "Пользователь",
+			"code": "user",
+			"type": "objectum.user"
+		},
+		{
+			"model": "recipe",
+			"name": "Время приготовления (мин.)",
+			"code": "duration",
+			"type": "Number"
+		},
+		{
+			"model": "t.recipe.comment",
+			"name": "Рецепт",
+			"code": "recipe",
+			"type": "recipe",
+			"notNull": 1,
+			"removeRule": "cascade"
+		},
+		{
+			"model": "t.recipe.comment",
+			"name": "Текст",
+			"code": "text",
+			"type": "String",
+			"notNull": 1,
+			"opts": {
+				"wysiwyg": true
+			}
+		},
+		{
+			"model": "t.recipe.comment",
+			"name": "Пользователь",
+			"code": "user",
+			"type": "objectum.user",
+			"notNull": 1,
+			"removeRule": "cascade"
+		},
+		{
+			"model": "t.recipe.comment",
+			"name": "Дата",
+			"code": "date",
+			"type": "Date",
+			"notNull": 1
+		},
+		{
+			"model": "t.recipe.like",
+			"name": "Рецепт",
+			"code": "recipe",
+			"type": "recipe",
+			"notNull": 1,
+			"removeRule": "cascade"
+		},
+		{
+			"model": "t.recipe.like",
+			"name": "Пользователь",
+			"code": "user",
+			"type": "objectum.user",
+			"notNull": 1,
+			"removeRule": "cascade"
+		},
+		{
+			"model": "t.recipe.like",
+			"name": "Дата",
+			"code": "date",
+			"type": "Date",
+			"notNull": 1
+		},
+		{
+			"model": "t.recipe.like",
+			"name": "Лайк",
+			"code": "like",
+			"type": "Boolean"
+		},
+		{
+			"model": "t.recipe.like",
+			"name": "Дизлайк",
+			"code": "dislike",
+			"type": "Boolean"
+		}
+	],
+	"createQuery": [
+		{
+			"name": "Рецепт",
+			"code": "recipe"
+		},
+		{
+			"parent": "recipe",
+			"name": "Лайки",
+			"code": "like",
+			"query": [
+				"select",
+				"    {\"prop\": \"a.recipe\", \"as\": \"recipe\"},",
+				"\tsum ({\"prop\": \"a.like\"}) as like,",
+				"\tsum ({\"prop\": \"a.dislike\"}) as dislike",
+				"from",
+				"    {\"model\": \"t.recipe.like\", \"alias\": \"a\"}",
+				"group by",
+				"\t{\"prop\": \"a.recipe\"}",
+				""
+			]
+		}
+	],
+	"createColumn": []
+}

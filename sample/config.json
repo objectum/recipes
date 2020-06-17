@@ -1,0 +1,28 @@
+{
+	"code": "recipes",
+	"adminPassword": "D033E22AE348AEB5660FC2140AEC35850C4DA997",
+	"port": 3100,
+	"database": {
+		"host": "127.0.0.1",
+		"port": 5432,
+		"db": "recipes",
+		"dbUser": "recipes",
+		"dbPassword": "1",
+		"dbaUser": "postgres",
+		"dbaPassword": "12345"
+	},
+	"objectum": {
+		"host": "127.0.0.1",
+		"port": 8200
+	},
+	"smtp": {
+		"host": "smtp.gmail.com",
+		"port": 465,
+		"secure": true,
+		"sender": "samortsev@objectum.org",
+		"auth": {
+			"user": "samortsev@objectum.org",
+			"pass": ""
+		}
+	}
+}
