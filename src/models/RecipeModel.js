@@ -23,7 +23,9 @@ class RecipeModel extends Record {
 				],
 				[
 					"cooking"
-				],
+				]
+			],
+			"Фото": [
 				[
 					"t.recipe.photo"
 				]
@@ -44,7 +46,8 @@ class RecipeModel extends Record {
 	static _renderForm ({form, store}) {
 		return React.cloneElement (form, {
 			defaults: {
-				date: new Date ()
+				date: new Date (),
+				user: store.userId
 			}
 		});
 	}
@@ -95,7 +98,6 @@ class RecipeModel extends Record {
 			await store.commitTransaction ();
 		}
 	}
-	
 };
 
 export default RecipeModel;

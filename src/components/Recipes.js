@@ -90,9 +90,20 @@ class Recipes extends Component {
 						<div className="">
 							<i className="fas fa-calendar-alt card-icon mr-2" />{record.date.toLocaleDateString ()}
 						</div>
-						<div className="mt-2 p-1">
-							<Action btnClassName="btn btn-outline-primary" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action><span className="px-2 like">{this.getLikes (record.id)}</span>
-							<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action><span className="px-2 like">{this.getDislikes (record.id)}</span>
+{/*
+						<div className="mt-2 d-table">
+							<Action btnClassName="btn btn-outline-primary d-table-cell" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action>
+							<div className="px-2 d-table-cell align-middle">{this.getLikes (record.id)}</div>
+							<Action btnClassName="btn btn-outline-danger d-table-cell" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action>
+							<div className="px-2 d-table-cell">{this.getDislikes (record.id)}</div>
+						</div>
+*/}
+						<div className="mt-2 d-flex align-items-center">
+							<Action btnClassName="btn btn-outline-primary" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action>
+							<div className="px-2">{this.getLikes (record.id)}</div>
+							<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action>
+							<div className="px-2">{this.getDislikes (record.id)}</div>
+							{record.user == this.props.store.userId && <Link className="btn btn-outline-info" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit" /></Link>}
 						</div>
 					</div>
 				</div>

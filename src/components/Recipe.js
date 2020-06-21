@@ -4,6 +4,7 @@
 import React, {Component} from "react";
 import {Action} from "objectum-react";
 import RecipeModel from "../models/RecipeModel";
+import {Link} from "react-router-dom";
 
 class Recipe extends Component {
 	constructor (props) {
@@ -83,9 +84,10 @@ class Recipe extends Component {
 					<div className="">
 						<i className="fas fa-calendar-alt menu-icon mr-2" />{record.date.toLocaleString ()}
 					</div>
-					<div className="my-2 p-1">
+					<div className="my-2 p-1 d-flex align-items-center">
 						<Action btnClassName="btn btn-outline-primary" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action><span className="px-2 like">{this.state.likeNum}</span>
 						<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action><span className="px-2 like">{this.state.dislikeNum}</span>
+						{record.user == this.props.store.userId && <Link className="btn btn-outline-info" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit" /></Link>}
 					</div>
 					<div dangerouslySetInnerHTML={{__html: record.cooking}} />
 				</div>

@@ -7,6 +7,7 @@ import {ObjectumApp, ObjectumRoute, Navbar, Office, Loading} from "objectum-reac
 import Recipes from "./components/Recipes";
 import Recipe from "./components/Recipe";
 import RecipeModel from "./models/RecipeModel";
+import RecipePhotoModel from "./models/RecipePhotoModel";
 
 import "./css/bootstrap.css";
 import "objectum-react/lib/css/objectum.css";
@@ -21,6 +22,7 @@ class App extends Component {
 
 		store.setUrl ("/api");
 		store.register ("recipe", RecipeModel);
+		store.register ("t.recipe.photo", RecipePhotoModel);
 		
 		this.state = {
 			name: process.env.REACT_APP_NAME || "Просторецепты"
@@ -42,6 +44,13 @@ class App extends Component {
 		this.setState (state);
 	}
 	
+	onDisconnect = async () => {
+		await store.auth ({
+			username: "guest",
+			password: require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase ()
+		});
+	}
+	
 	onCustomRender = ({content, app, location}) => {
 		if (!this.state.username) {
 			return <Loading container />
@@ -54,6 +63,13 @@ class App extends Component {
 					icon: "fas fa-utensils",
 					path: "/recipes"
 				},
+				...(store.roleCode == "user" ? [
+					{
+						label: "Добавить",
+						icon: "fas fa-plus",
+						path: '/model_record/new#{"opts":{"model":"recipe"}}'
+					}
+				] : []),
 				{
 					label: "Вход",
 					icon: "fas fa-sign-in-alt",
@@ -68,8 +84,8 @@ class App extends Component {
 							path: "/"
 						}
 					]} />
-					<Navbar expand app={app} items={items}/>
-					<div className="bg-white">
+					<Navbar expand iconsTop app={app} items={items}/>
+					<div className="bg-white py-1">
 						{content}
 					</div>
 				</div>
@@ -85,9 +101,11 @@ class App extends Component {
 			version: process.env.REACT_APP_VERSION,
 			onCustomRender: this.onCustomRender,
 			onConnect: this.onConnect,
+			onDisconnect: this.onDisconnect,
 			registration: true,
 			username: "guest",
-			password: require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase ()
+			password: require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase (),
+			iconsTop: true
 		};
 		if (process.env.NODE_ENV === "development") {
 			props._username = "admin";
