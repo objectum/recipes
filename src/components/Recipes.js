@@ -103,8 +103,8 @@ class Recipes extends Component {
 							<div className="px-2">{this.getLikes (record.id)}</div>
 							<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action>
 							<div className="px-2">{this.getDislikes (record.id)}</div>
-							{record.user == this.props.store.userId && <Link className="btn btn-outline-info" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit" /></Link>}
 						</div>
+						{record.user == this.props.store.userId && <Link className="btn btn-outline-info mt-2" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit mr-1" />Изменить</Link>}
 					</div>
 				</div>
 			</div>
