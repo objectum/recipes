@@ -16,10 +16,16 @@ class RecipeModel extends Record {
 			"Информация": [
 				"id",
 				[
+					"user"
+				],
+				[
 					"name"
 				],
 				[
-					"duration", "user", "date"
+					"date"
+				],
+				[
+					"duration"
 				],
 				[
 					"cooking"
@@ -55,6 +61,8 @@ class RecipeModel extends Record {
 	static _renderField ({field, store}) {
 		if (field.props.property === "date") {
 			return React.cloneElement (field, {showTime: true});
+		} else if (field.props.property === "user" && store.roleCode == "user") {
+			return React.cloneElement (field, {disabled: true});
 		} else {
 			return field;
 		}

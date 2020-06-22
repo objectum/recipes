@@ -3,28 +3,34 @@
 
 import React, {Component} from "react";
 import {Link} from "react-router-dom";
-import {Action} from "objectum-react";
+import {Action, Pagination} from "objectum-react";
 import RecipeModel from "../models/RecipeModel";
 
 class Recipes extends Component {
 	constructor (props) {
 		super (props);
 		
-		this.state = {};
+		this.state = {
+			pageRecs: 10
+		};
 	}
 	
 	async componentDidMount () {
-		let state = {};
-		
-		state.recipeRecords = await this.props.store.getRecords ({
+		let recipeRecords = await this.props.store.getRecords ({
 			model: "recipe"
 		});
-		state.photoRecords = await this.props.store.getRecords ({
-			model: "t.recipe.photo"
-		});
-		Object.assign (state, await this.loadLikes ());
-		
-		this.setState (state);
+		let recipes = recipeRecords.map (record => record.id);
+		let [photoRecords, comments, likes] = await Promise.all ([
+			this.props.store.getRecords ({
+				model: "t.recipe.photo",
+				filters: [
+					["recipe", "in", recipes]
+				]
+			}),
+			this.loadComments (recipes),
+			this.loadLikes (recipes)
+		]);
+		this.setState (Object.assign ({recipeRecords, photoRecords}, comments, likes));
 	}
 	
 	getLikes (id) {
@@ -39,9 +45,12 @@ class Recipes extends Component {
 		return rec ? rec.dislike : 0;
 	}
 	
-	async loadLikes () {
+	async loadLikes (recipes) {
 		let likeRecs = await this.props.store.getRecs ({
-			query: "recipe.like"
+			query: "recipe.like",
+			filters: [
+				["recipe", "in", recipes]
+			]
 		});
 		let likeMap = {};
 		
@@ -56,6 +65,20 @@ class Recipes extends Component {
 		let {likeRecs, likeMap} = await this.loadLikes ();
 		
 		this.setState ({likeRecs, likeMap});
+	}
+	
+	async loadComments (recipes) {
+		let commentRecs = await this.props.store.getRecs ({
+			query: "recipe.comment",
+			filters: [
+				["recipe", "in", recipes]
+			]
+		});
+		let commentMap = {};
+		
+		commentRecs.forEach (rec => commentMap [rec.recipe] = rec.num);
+		
+		return {commentRecs, commentMap};
 	}
 	
 	renderRecipe (record) {
@@ -90,6 +113,9 @@ class Recipes extends Component {
 						<div className="">
 							<i className="fas fa-calendar-alt card-icon mr-2" />{record.date.toLocaleDateString ()}
 						</div>
+						<div>
+							<i className="fas fa-comment-alt card-icon mr-2" />{this.state.commentMap [record.id] || 0}
+						</div>
 {/*
 						<div className="mt-2 d-table">
 							<Action btnClassName="btn btn-outline-primary d-table-cell" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action>
@@ -122,16 +148,26 @@ class Recipes extends Component {
 		);
 	}
 	
+	renderPagination () {
+		if (this.state.recipeRecords.length < this.state.pageRecs) {
+			return null;
+		}
+		return (
+			<div className="mt-2">
+				<Pagination items={["1", "2", "3"]} />
+			</div>
+		);
+	}
+	
 	render () {
 		if (!this.state.recipeRecords) {
-			return (
-				<div />
-			);
+			return null;
 		} else {
 			return (
 				<div className="container">
 					<div className="pl-1 pt-1">
 						{this.renderRecipes ()}
+						{this.renderPagination ()}
 					</div>
 				</div>
 			);

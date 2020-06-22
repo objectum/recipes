@@ -2,7 +2,7 @@
 /* eslint-disable eqeqeq */
 
 import React, {Component} from "react";
-import {Action} from "objectum-react";
+import {Action, StringField} from "objectum-react";
 import RecipeModel from "../models/RecipeModel";
 import {Link} from "react-router-dom";
 
@@ -16,18 +16,23 @@ class Recipe extends Component {
 	}
 	
 	async componentDidMount () {
-		let state = {};
-		
-		state.recipeRecord = await this.props.store.getRecord (this.state.id);
-		state.photoRecords = await this.props.store.getRecords ({
-			model: "t.recipe.photo",
-			filters: [
-				["recipe", "=", this.state.id]
-			]
-		});
-		Object.assign (state, await this.loadLikes ());
-		
-		this.setState (state);
+		let [recipeRecord, photoRecords, commentRecords, likes] = await Promise.all ([
+			this.props.store.getRecord (this.state.id),
+			this.props.store.getRecords ({
+				model: "t.recipe.photo",
+				filters: [
+					["recipe", "=", this.state.id]
+				]
+			}),
+			this.props.store.getRecords ({
+				model: "t.recipe.comment",
+				filters: [
+					["recipe", "=", this.state.id]
+				]
+			}),
+			this.loadLikes ()
+		]);
+		this.setState (Object.assign ({recipeRecord, photoRecords, commentRecords}, likes));
 	}
 	
 	async loadLikes () {
@@ -56,9 +61,58 @@ class Recipe extends Component {
 		this.setState (await this.loadLikes ());
 	}
 	
+	onComment = async () => {
+		await this.props.store.startTransaction ("new comment");
+		await this.props.store.createRecord ({
+			_model: "t.recipe.comment",
+			recipe: this.state.id,
+			date: new Date (),
+			user: this.props.store.userId,
+			text: this.state.text
+		});
+		await this.props.store.commitTransaction ("new comment");
+		this.setState ({
+			text: "",
+			commentRecords: await this.props.store.getRecords ({
+				model: "t.recipe.comment",
+				filters: [
+					["recipe", "=", this.state.id]
+				]
+			})
+		});
+	}
+	
+	renderComments () {
+		return (
+			<div className="mt-4">
+				<h5 className="font-weight-bold">Комментарии: {this.state.commentRecords.length}</h5>
+				{this.state.commentRecords.map (record => {
+					let userRecord = this.props.store.dict ["objectum.user"][record.user];
+					
+					return (
+						<div className="mt-2">
+							<div className="font-weight-bold">{userRecord.getLabel ()}</div>
+							<div className="font-italic">{record.date.toLocaleString ()}</div>
+							<div>{record.text}</div>
+						</div>
+					);
+				})}
+				<div className="mt-2">
+					<StringField onChange={({value}) => this.setState ({text: value})} placeholder="Добавить комментарий" />
+					{this.props.store.roleCode == "user" ? <Action
+						className="mt-1" btnClassName="btn btn-outline-primary"
+						label="Отправить" icon="fas fa-plus" onClick={this.onComment}
+						disabled={!this.state.text}
+					/> :
+					<Link className="btn btn-outline-info" to="/office">Необходимо авторизоваться</Link>}
+				</div>
+			</div>
+		);
+	}
+	
 	render () {
 		if (!this.state.recipeRecord) {
-			return <div />;
+			return null;
 		}
 		let record = this.state.recipeRecord;
 		
@@ -90,6 +144,7 @@ class Recipe extends Component {
 						{record.user == this.props.store.userId && <Link className="btn btn-outline-info" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit" /></Link>}
 					</div>
 					<div dangerouslySetInnerHTML={{__html: record.cooking}} />
+					{this.renderComments ()}
 				</div>
 			</div>
 		);
