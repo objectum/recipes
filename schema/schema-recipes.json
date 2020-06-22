@@ -4326,6 +4326,26 @@
 				3,
 				1014
 			]
+		},
+		{
+			"values": [
+				1015,
+				1013,
+				"Комментарии",
+				"comment",
+				null,
+				null,
+				"select\n    {\"prop\": \"a.recipe\", \"as\": \"recipe\"},\n\tcount (*) as num\nfrom\n    {\"model\": \"t.recipe.comment\", \"alias\": \"a\"}\ngroup by\n\t{\"prop\": \"a.recipe\"}\n",
+				null,
+				null,
+				null,
+				null,
+				null,
+				1185,
+				0,
+				3,
+				1015
+			]
 		}
 	],
 	"tview_attr": [
@@ -7205,6 +7225,30 @@
 				"Добавление, модель: t.recipe.photo",
 				3,
 				1184
+			]
+		},
+		{
+			"values": [
+				1185,
+				{
+					"type": "datetime",
+					"value": "2020-06-22T18:55:55.601Z"
+				},
+				"Добавление",
+				3,
+				1185
+			]
+		},
+		{
+			"values": [
+				1194,
+				{
+					"type": "datetime",
+					"value": "2020-06-22T20:17:02.777Z"
+				},
+				"new comment",
+				3,
+				1194
 			]
 		}
 	]
