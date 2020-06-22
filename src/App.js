@@ -8,6 +8,8 @@ import Recipes from "./components/Recipes";
 import Recipe from "./components/Recipe";
 import RecipeModel from "./models/RecipeModel";
 import RecipePhotoModel from "./models/RecipePhotoModel";
+import RecipeCommentModel from "./models/RecipeCommentModel";
+import RecipeLikeModel from "./models/RecipeLikeModel";
 
 import "./css/bootstrap.css";
 import "objectum-react/lib/css/objectum.css";
@@ -21,8 +23,11 @@ class App extends Component {
 		super (props);
 
 		store.setUrl ("/api");
+		
 		store.register ("recipe", RecipeModel);
 		store.register ("t.recipe.photo", RecipePhotoModel);
+		store.register ("t.recipe.comment", RecipeCommentModel);
+		store.register ("t.recipe.like", RecipeLikeModel);
 		
 		this.state = {
 			name: process.env.REACT_APP_NAME || "Просторецепты"

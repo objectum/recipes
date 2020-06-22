@@ -86,12 +86,12 @@ class Recipe extends Component {
 		return (
 			<div className="mt-4">
 				<h5 className="font-weight-bold">Комментарии: {this.state.commentRecords.length}</h5>
-				{this.state.commentRecords.map (record => {
+				{this.state.commentRecords.map ((record, i) => {
 					let userRecord = this.props.store.dict ["objectum.user"][record.user];
 					
 					return (
-						<div className="mt-2">
-							<div className="font-weight-bold">{userRecord.getLabel ()}</div>
+						<div key={i} className="mt-2">
+							<div className="font-weight-bold">{userRecord.name}</div>
 							<div className="font-italic">{record.date.toLocaleString ()}</div>
 							<div>{record.text}</div>
 						</div>
@@ -104,7 +104,7 @@ class Recipe extends Component {
 						label="Отправить" icon="fas fa-plus" onClick={this.onComment}
 						disabled={!this.state.text}
 					/> :
-					<Link className="btn btn-outline-info" to="/office">Необходимо авторизоваться</Link>}
+					<Link className="btn btn-outline-info mt-1" to="/office">Необходимо авторизоваться</Link>}
 				</div>
 			</div>
 		);
