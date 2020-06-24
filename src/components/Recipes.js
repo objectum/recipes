@@ -16,7 +16,7 @@ class Recipes extends Component {
 		};
 	}
 	
-	async load ({page, search, user, recipes, like} = {}) {
+	async load ({page, search, user, recipes, like, reset} = {}) {
 		let state = {
 			page: page === undefined ? this.state.page : page,
 			search: this.state.search,
@@ -26,7 +26,7 @@ class Recipes extends Component {
 		};
 		let filters = [];
 		
-		if (search || user || recipes) {
+		if (search || user || recipes || reset) {
 			Object.assign (state, {search, user, recipes, like});
 			
 			if (!search) {
@@ -187,19 +187,19 @@ class Recipes extends Component {
 			<div className="row flex-row mb-1">
 				<StringField placeholder="Поиск" value={this.state.searchValue} onChange={({value}) => this.setState ({searchValue: value})} />
 				<Action
-					className="ml-1" disabled={!this.state.searchValue} onClick={async () => await this.load ({search: this.state.searchValue})}
+					className="ml-1" disabled={!this.state.searchValue} onClick={async () => await this.load (this.state.search ? {reset: true} : {search: this.state.searchValue})}
 					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.search ? "active" : ""}`}
 				><i className="fas fa-search mr-1" />Найти</Action>
 				{isUser && <Action
-					onClick={async () => await this.load ({user: this.props.store.userId})}
+					onClick={async () => await this.load (this.state.user ? {reset: true} : {user: this.props.store.userId})}
 					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.user ? "active" : ""}`}
 				><i className="fas fa-edit mr-1" />Мои рецепты</Action>}
 				{isUser && <Action
-					onClick={async () => await this.showLikes (true)}
+					onClick={async () => this.state.like === true ? await this.load ({reset: true}) : await this.showLikes (true)}
 					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.like === true ? "active" : ""}`}
 				><i className="fas fa-thumbs-up" /></Action>}
 				{isUser && <Action
-					onClick={async () => await this.showLikes (false)}
+					onClick={async () => this.state.like === false ? await this.load ({reset: true}) : await this.showLikes (false)}
 					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.like === false ? "active" : ""}`}
 				><i className="fas fa-thumbs-down" /></Action>}
 			</div>
