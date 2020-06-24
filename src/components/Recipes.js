@@ -3,7 +3,7 @@
 
 import React, {Component} from "react";
 import {Link} from "react-router-dom";
-import {Action, Pagination} from "objectum-react";
+import {StringField, Action, Pagination} from "objectum-react";
 import RecipeModel from "../models/RecipeModel";
 
 class Recipes extends Component {
@@ -11,15 +11,47 @@ class Recipes extends Component {
 		super (props);
 		
 		this.state = {
+			page: 0,
 			pageRecs: 10
 		};
 	}
 	
-	async componentDidMount () {
-		let recipeRecords = await this.props.store.getRecords ({
-			model: "recipe"
+	async load ({page, search, user, recipes, like} = {}) {
+		let state = {
+			page: page === undefined ? this.state.page : page,
+			search: this.state.search,
+			user: this.state.user,
+			recipes: this.state.recipes,
+			like: this.state.like
+		};
+		let filters = [];
+		
+		if (search || user || recipes) {
+			Object.assign (state, {search, user, recipes, like});
+			
+			if (!search) {
+				state.searchValue = "";
+			}
+		}
+		if (state.search) {
+			filters.push (["name", "like", "%" + state.search]);
+		}
+		if (state.user) {
+			filters.push (["user", "=", state.user]);
+		}
+		if (state.recipes) {
+			filters.push (["id", "in", state.recipes]);
+		}
+		let data = await this.props.store.getData ({
+			model: "recipe",
+			offset: state.page * this.state.pageRecs,
+			limit: this.state.pageRecs,
+			filters
 		});
-		let recipes = recipeRecords.map (record => record.id);
+		let recipeRecs = data.recs;
+		
+		recipes = recipeRecs.map (rec => rec.id);
+		
 		let [photoRecords, comments, likes] = await Promise.all ([
 			this.props.store.getRecords ({
 				model: "t.recipe.photo",
@@ -30,7 +62,11 @@ class Recipes extends Component {
 			this.loadComments (recipes),
 			this.loadLikes (recipes)
 		]);
-		this.setState (Object.assign ({recipeRecords, photoRecords}, comments, likes));
+		this.setState (Object.assign (state, {recipeRecs, length: data.length, photoRecords}, comments, likes));
+	}
+	
+	async componentDidMount () {
+		await this.load ();
 	}
 	
 	getLikes (id) {
@@ -81,13 +117,28 @@ class Recipes extends Component {
 		return {commentRecs, commentMap};
 	}
 	
-	renderRecipe (record) {
-		let photos = this.state.photoRecords.filter (photo => photo.recipe == record.id);
+	showLikes = async (like) => {
+		let likeRecs = await this.props.store.getRecs ({
+			model: "t.recipe.like",
+			filters: [
+				["user", "=", this.props.store.userId]
+			]
+		});
+		likeRecs = likeRecs.filter (rec => {
+			return (rec.like && like) || (rec.dislike && !like);
+		});
+		let recipes = likeRecs.map (rec => rec.recipe);
+		
+		await this.load ({recipes: recipes.length ? recipes : [0], like});
+	}
+	
+	renderRecipe (rec) {
+		let photos = this.state.photoRecords.filter (photo => photo.recipe == rec.id);
 
 		return (
-			<div key={record.id} className="border p-1 mr-1 mb-1 card">
+			<div key={rec.id} className="border p-1 mr-1 mb-1 card">
 				<div className="">
-					<Link className="btn btn-link text-left pt-0 pb-1 px-0 font-weight-bold" to={`/recipe/${record.id}`}>{record.name}</Link>
+					<Link className="btn btn-link text-left pt-0 pb-1 px-0 font-weight-bold" to={`/recipe/${rec.id}`}>{rec.name}</Link>
 				</div>
 				<div className="d-flex">
 					<div className="card-photo">
@@ -104,42 +155,60 @@ class Recipes extends Component {
 						</div>
 					</div>
 					<div className="card-info p-1">
-						{record.user && <div className="">
-							<i className="fas fa-user card-icon mr-2" />{this.props.store.dict ["objectum.user"][record.user].name}
+						{rec.user && <div className="">
+							<i className="fas fa-user card-icon mr-2" />{this.props.store.dict ["objectum.user"][rec.user].name}
 						</div>}
-						{record.duration && <div className="">
-							<i className="fas fa-clock card-icon mr-2" />{record.duration} мин.
+						{rec.duration && <div className="">
+							<i className="fas fa-clock card-icon mr-2" />{rec.duration} мин.
 						</div>}
 						<div className="">
-							<i className="fas fa-calendar-alt card-icon mr-2" />{record.date.toLocaleDateString ()}
+							<i className="fas fa-calendar-alt card-icon mr-2" />{rec.date.toLocaleDateString ()}
 						</div>
 						<div>
-							<i className="fas fa-comment-alt card-icon mr-2" />{this.state.commentMap [record.id] || 0}
+							<i className="fas fa-comment-alt card-icon mr-2" />{this.state.commentMap [rec.id] || 0}
 						</div>
-{/*
-						<div className="mt-2 d-table">
-							<Action btnClassName="btn btn-outline-primary d-table-cell" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action>
-							<div className="px-2 d-table-cell align-middle">{this.getLikes (record.id)}</div>
-							<Action btnClassName="btn btn-outline-danger d-table-cell" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action>
-							<div className="px-2 d-table-cell">{this.getDislikes (record.id)}</div>
-						</div>
-*/}
 						<div className="mt-2 d-flex align-items-center">
-							<Action btnClassName="btn btn-outline-primary" onClick={async () => await this.onLike (true, record.id)}><i className="fas fa-thumbs-up" /></Action>
-							<div className="px-2">{this.getLikes (record.id)}</div>
-							<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, record.id)}><i className="fas fa-thumbs-down" /></Action>
-							<div className="px-2">{this.getDislikes (record.id)}</div>
+							<Action btnClassName="btn btn-outline-primary" onClick={async () => await this.onLike (true, rec.id)}><i className="fas fa-thumbs-up" /></Action>
+							<div className="px-2">{this.getLikes (rec.id)}</div>
+							<Action btnClassName="btn btn-outline-danger" onClick={async () => await this.onLike (false, rec.id)}><i className="fas fa-thumbs-down" /></Action>
+							<div className="px-2">{this.getDislikes (rec.id)}</div>
 						</div>
-						{record.user == this.props.store.userId && <Link className="btn btn-outline-info mt-2" to={`/model_record/${record.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit mr-1" />Изменить</Link>}
+						{rec.user == this.props.store.userId && <Link className="btn btn-outline-info mt-2" to={`/model_record/${rec.id}#{"opts":{"model":"recipe"}}`}><i className="fas fa-edit mr-1" />Изменить</Link>}
 					</div>
 				</div>
 			</div>
 		);
 	}
 	
+	renderToolbar () {
+		let isUser = this.props.store.roleCode == "user";
+		
+		return (
+			<div className="row flex-row mb-1">
+				<StringField placeholder="Поиск" value={this.state.searchValue} onChange={({value}) => this.setState ({searchValue: value})} />
+				<Action
+					className="ml-1" disabled={!this.state.searchValue} onClick={async () => await this.load ({search: this.state.searchValue})}
+					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.search ? "active" : ""}`}
+				><i className="fas fa-search mr-1" />Найти</Action>
+				{isUser && <Action
+					onClick={async () => await this.load ({user: this.props.store.userId})}
+					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.user ? "active" : ""}`}
+				><i className="fas fa-edit mr-1" />Мои рецепты</Action>}
+				{isUser && <Action
+					onClick={async () => await this.showLikes (true)}
+					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.like === true ? "active" : ""}`}
+				><i className="fas fa-thumbs-up" /></Action>}
+				{isUser && <Action
+					onClick={async () => await this.showLikes (false)}
+					btnClassName={`btn btn-primary btn-labeled mr-1 mb-1 ${this.state.like === false ? "active" : ""}`}
+				><i className="fas fa-thumbs-down" /></Action>}
+			</div>
+		);
+	}
+	
 	renderRecipes () {
-		let recipes = this.state.recipeRecords.map (record => {
-			return this.renderRecipe (record);
+		let recipes = this.state.recipeRecs.map (rec => {
+			return this.renderRecipe (rec);
 		});
 		return (
 			<div className="row flex-row">
@@ -149,23 +218,31 @@ class Recipes extends Component {
 	}
 	
 	renderPagination () {
-		if (this.state.recipeRecords.length < this.state.pageRecs) {
+		if (this.state.length < this.state.pageRecs) {
 			return null;
+		}
+		let items = [];
+		
+		for (let i = 0; i < this.state.length / this.state.pageRecs; i ++) {
+			items.push (i + 1);
 		}
 		return (
 			<div className="mt-2">
-				<Pagination items={["1", "2", "3"]} />
+				<Pagination items={items} active={this.state.page} onChange={async (page) => {
+					await this.load ({page});
+				}} />
 			</div>
 		);
 	}
 	
 	render () {
-		if (!this.state.recipeRecords) {
+		if (!this.state.recipeRecs) {
 			return null;
 		} else {
 			return (
 				<div className="container">
 					<div className="pl-1 pt-1">
+						{this.renderToolbar ()}
 						{this.renderRecipes ()}
 						{this.renderPagination ()}
 					</div>
