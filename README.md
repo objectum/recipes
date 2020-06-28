@@ -1,5 +1,5 @@
 # recipes
-Objectum project example. PWA (Progressive-Web-Application).
+Objectum project example. PWA (Progressive Web Application).
 
 Requirements: [NodeJS (ES Modules)](https://nodejs.org), [PostgreSQL](https://www.postgresql.org/download/), [Redis](https://redis.io/)
 
