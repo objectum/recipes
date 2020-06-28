@@ -12,7 +12,7 @@ let map = {
 			}
 		},
 		"read": {
-			"objectum.role": true, "objectum.user": true, "objectum.menu": true, "objectum.menuItem": true
+			"objectum.role": true, "objectum.user": true, "objectum.menu": true, "objectum.menuItem": true, "recipe": true
 		}
 	}
 };
