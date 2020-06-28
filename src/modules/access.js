@@ -34,7 +34,11 @@ function _accessData ({store, data}) {
 
 function _accessDataAfter ({store, data, resData}) {
 	if (data.model == "objectum.user") {
-		resData.recs.forEach (rec => rec.password = "");
+		let n = 0;
+		
+		for (; resData.cols [n].code != "password"; n ++) {}
+		
+		resData.recs.forEach (rec => rec [n] = "");
 		return resData;
 	}
 	return true;
