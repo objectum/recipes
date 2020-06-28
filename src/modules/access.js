@@ -5,7 +5,7 @@ let map = {
 	"guest": {
 		"data": {
 			"model": {
-				"recipe": true, "t.recipe.photo": true, "t.recipe.comment": true, "t.recipe.like": true
+				"recipe": true, "t.recipe.photo": true, "t.recipe.comment": true, "t.recipe.like": true, "objectum.user": true
 			},
 			"query": {
 				"objectum.userMenuItems": true, "recipe.comment": true, "recipe.like": true
@@ -30,6 +30,14 @@ function _accessData ({store, data}) {
 	} else {
 		return true;
 	}
+};
+
+function _accessDataAfter ({store, data, resData}) {
+	if (data.model == "objectum.user") {
+		resData.recs.forEach (rec => rec.password = "");
+		return resData;
+	}
+	return true;
 };
 
 function _accessFilter ({store, model, alias}) {
@@ -74,6 +82,7 @@ function _accessDelete ({store, model, record}) {
 export default {
 	_init,
 	_accessData,
+	_accessDataAfter,
 	_accessFilter,
 	_accessCreate,
 	_accessRead,
