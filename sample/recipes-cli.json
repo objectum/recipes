@@ -66,9 +66,8 @@
 			"notNull": 1,
 			"opts": {
 				"image": {
-					"width": 200,
-					"height": 200,
-					"aspect": 1
+					"aspect": 1,
+					"thumbnail": "thumbnail"
 				}
 			}
 		},
@@ -157,6 +156,21 @@
 			"name": "Дизлайк",
 			"code": "dislike",
 			"type": "Boolean"
+		},
+		{
+			"model": "t.recipe.photo",
+			"name": "Миниатюра",
+			"code": "thumbnail",
+			"type": "File",
+			"opts": {
+				"image": {
+					"aspect": 1,
+					"resize": {
+						"width": 200,
+						"height": 200
+					}
+				}
+			}
 		}
 	],
 	"createQuery": [
@@ -179,7 +193,125 @@
 				"\t{\"prop\": \"a.recipe\"}",
 				""
 			]
+		},
+		{
+			"parent": "recipe",
+			"name": "Комментарии",
+			"code": "comment",
+			"query": [
+				"select",
+				"    {\"prop\": \"a.recipe\", \"as\": \"recipe\"},",
+				"\tcount (*) as num",
+				"from",
+				"    {\"model\": \"t.recipe.comment\", \"alias\": \"a\"}",
+				"group by",
+				"\t{\"prop\": \"a.recipe\"}",
+				""
+			]
 		}
 	],
-	"createColumn": []
+	"createColumn": [],
+	"createRecord": [
+		{
+			"_model": "objectum.role",
+			"_ref": "ref-1013",
+			"name": "Гость",
+			"code": "guest",
+			"menu": null
+		},
+		{
+			"_model": "objectum.role",
+			"_ref": "ref-1019",
+			"name": "User",
+			"code": "user",
+			"menu": null
+		},
+		{
+			"_model": "objectum.user",
+			"_ref": "ref-1014",
+			"name": "Гость",
+			"login": "guest",
+			"password": "35675E68F4B5AF7B995D9205AD0FC43842F16450",
+			"role": {
+				"_ref": "ref-1013"
+			},
+			"email": null,
+			"opts": null
+		},
+		{
+			"_model": "objectum.user",
+			"_ref": "ref-1020",
+			"name": "Ivan Ivanov",
+			"login": "ivanov@ivanov.ivanov",
+			"password": "356A192B7913B04C54574D18C28D46E6395428AB",
+			"role": {
+				"_ref": "ref-1019"
+			},
+			"email": "ivanov@ivanov.ivanov",
+			"opts": null
+		},
+		{
+			"_model": "recipe",
+			"_ref": "ref-1015",
+			"name": "Мороженое",
+			"date": "2020-06-06T20:41:10.000Z",
+			"cooking": "<p><strong>Инструкция:</strong></p><ul><li>250 мл охлажденных сливок взбить.</li><li>Добавить около 200 гр сгущенки (почти полбанки) и взбить.</li><li>Выложить в форму печеньки, залить смесь. Сверху снова печеньки.</li><li>Положить в морозилку на несколько часов.</li><li>Достать и нарезать на порции.</li></ul>",
+			"user": {
+				"_ref": "ref-1020"
+			},
+			"duration": 180
+		},
+		{
+			"_model": "recipe",
+			"_ref": "ref-1048",
+			"name": "Омлет",
+			"date": "2020-06-24T08:36:11.038Z",
+			"cooking": "<p><strong>Ингредиенты:</strong></p><ul><li><span style=\"background-color: transparent;\">Яйцо куриное: 2</span> штуки</li><li><span style=\"background-color: transparent;\">Молоко: </span>50 мл</li><li><span style=\"background-color: transparent;\">Соль </span>по вкусу</li></ul><p><strong>Инструкция:</strong></p><ol><li><span style=\"background-color: transparent;\">Растопить на сковороде немного масла.</span></li><li><span style=\"background-color: transparent;\">Яйца разбить в миску. Добавить щепотку соли, молоко и взбить (можно вилкой).</span></li><li>Смесь вылить в сковороду и накрыть крышкой.</li><li>Готовить на среднем огне. Не на максимальном, а то сгорит.</li><li>Примерно время приготовления 5-10 мин. пока не приготовиться сверху.</li></ol>",
+			"user": {
+				"_ref": "ref-1020"
+			},
+			"duration": 10
+		},
+		{
+			"_model": "recipe",
+			"_ref": "ref-1059",
+			"name": "Плов",
+			"date": "2020-06-27T08:30:13.818Z",
+			"cooking": "<p><strong>Инструкция:</strong></p><ul><li>Нарезать кусок мяса около 200 гр., луковицу.</li><li>Натереть одну морковку.</li><li>Добавить в сковороду немного подсолнечного масла</li><li>Обжарить мясо с овощами пару минут</li><li>Промыть стакан риса и добавить сразу в сковороду. Залить двумя стаканами воды и перемешать.</li><li>Посолить и накрыть крышкой.</li><li>Готовить 15-20 минут на среднем огне.</li></ul>",
+			"user": {
+				"_ref": "ref-1020"
+			},
+			"duration": 20
+		},
+		{
+			"_model": "t.recipe.photo",
+			"_ref": "ref-1057",
+			"recipe": {
+				"_ref": "ref-1048"
+			},
+			"photo": "1-omelet.jpg",
+			"name": null,
+			"thumbnail": "2-omelet.jpg"
+		},
+		{
+			"_model": "t.recipe.photo",
+			"_ref": "ref-1058",
+			"recipe": {
+				"_ref": "ref-1015"
+			},
+			"photo": "3-icecream.png",
+			"name": null,
+			"thumbnail": "4-icecream.png"
+		},
+		{
+			"_model": "t.recipe.photo",
+			"_ref": "ref-1060",
+			"recipe": {
+				"_ref": "ref-1059"
+			},
+			"photo": "5-rice.jpg",
+			"name": null,
+			"thumbnail": "6-rice.jpg"
+		}
+	]
 }

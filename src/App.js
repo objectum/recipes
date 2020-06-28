@@ -113,10 +113,10 @@ class App extends Component {
 			iconsTop: true
 		};
 		if (process.env.NODE_ENV === "development") {
-			props._username = "admin";
-			props._password = require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ();
-			props.username = "samortsev@gmail.com";
-			props.password = require ("crypto").createHash ("sha1").update ("1").digest ("hex").toUpperCase ();
+			props.username = "admin";
+			props.password = require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ();
+			props._username = "ivanov@ivanov.ivanov";
+			props._password = require ("crypto").createHash ("sha1").update ("1").digest ("hex").toUpperCase ();
 		}
 		return (
 			<ObjectumApp {...props}>

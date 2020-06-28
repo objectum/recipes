@@ -147,7 +147,7 @@ class Recipes extends Component {
 								{photos.map ((photo, i) => {
 									return (
 										<div key={i} className="">
-											<img src={photo.getRef ("photo")} width={200} height={200} alt={photo.name || ""} />
+											<img src={photo.getRef ("thumbnail")} width={200} height={200} alt={photo.name || ""} />
 										</div>
 									);
 								})}

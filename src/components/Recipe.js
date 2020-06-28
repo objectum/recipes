@@ -122,7 +122,9 @@ class Recipe extends Component {
 					{this.state.photoRecords.map ((photo, i) => {
 						return (
 							<div key={i} className="">
-								<img src={photo.getRef ("photo")} width={200} height={200} alt={photo.name || ""} />
+								<a href={photo.getRef ("photo")} target="_blank" rel="noopener noreferrer">
+									<img src={photo.getRef ("thumbnail")} width={200} height={200} alt={photo.name || ""} />
+								</a>
 							</div>
 						);
 					})}
