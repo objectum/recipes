@@ -1395,6 +1395,6 @@ self.addEventListener ("fetch", function (event) {
 
 ## Заключение
 
-Показатели lighthouse достаточно неплохие, но надо учитывать что это react приложение.  
+Показатели lighthouse неплохие, но надо учитывать что это react приложение.  
 ![lighthouse](lighthouse.png)
 
