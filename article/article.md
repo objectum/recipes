@@ -581,7 +581,7 @@ class Recipes extends Component {
 ```
 </details>
 
-Компонент состоит из тулбара, списка рецептов и пагинации. Тулбар содержит фильтры по наименованию, своим рецептам, лайкам, дизлайкам.
+Компонент состоит из тулбара, списка рецептов и пагинации. Тулбар содержит фильтры по наименованию, своим рецептам, лайкам, дизлайкам.  
 Методы:
 * constructor - инициализируются параметры. Текущая страница 0, рецептов на странице показывать 10
 * load - загрузка рецептов, а также комментариев loadComments и лайков loadLikes
@@ -595,6 +595,10 @@ class Recipes extends Component {
     * Лайки, дизлайки - в методе load в запрос добавляется фильтр по рецептам. Список рецептов составляется с помощью метода showLikes
 * renderRecipes - список рецептов
 * renderPagination - пагинация
+
+Редактирование рецепта:
+![logo](recipe-edit.png)
+
 
 ### Recipe - рецепт
 
@@ -758,7 +762,7 @@ class Recipe extends Component {
 ```
 </details>
 
-Компонент отображает рецепт с фото и комментариями.
+Компонент отображает рецепт с фото и комментариями.  
 Методы:
 * componentDidMount - загружает данные по рецепту. Вызывает метод loadLikes
 * render - выводит информацию по рецепту 
@@ -904,6 +908,15 @@ class App extends Component {
 };		
 ```
 </details>
+
+Компонент заменяет рендер приложения по умолчанию. Новый рендер onCustomRender. Автоматически авторизуется под пользователем "Гость".
+Методы:
+* constructor - регистрация моделей
+* onConnect - вызывается при подключении к хранилищу. Сохраняет в состояние запись пользователя
+* onDisconnect - при отключении пользователя авторизуется под гостем
+
+Регистрация пользователя:
+![logo](registration.png)
 
 ## Модели
 
@@ -1153,9 +1166,240 @@ class RecipeModel extends Record {
 * _renderField - вызывается при редактировании рецепта
 * like - добавляет лайк рецепту или меняет его
 
+# Безопасность
+
+Контроль доступа реализуется набором методов.
+
+<details>
+  <summary>RecipeModel.js</summary>
+  
+```js
+let map = {
+	"guest": {
+		"data": {
+			"model": {
+				"recipe": true, "t.recipe.photo": true, "t.recipe.comment": true, "t.recipe.like": true, "objectum.user": true
+			},
+			"query": {
+				"objectum.userMenuItems": true, "recipe.comment": true, "recipe.like": true
+			}
+		},
+		"read": {
+			"objectum.role": true, "objectum.user": true, "objectum.menu": true, "objectum.menuItem": true, "recipe": true
+		}
+	}
+};
+async function _init ({store}) {
+};
+
+function _accessData ({store, data}) {
+	if (store.roleCode == "guest") {
+		if (data.model) {
+			return map.guest.data.model [store.getModel (data.model).getPath ()];
+		}
+		if (data.query) {
+			return map.guest.data.query [store.getQuery (data.query).getPath ()];
+		}
+	} else {
+		return true;
+	}
+};
+
+function _accessDataAfter ({store, data, resData}) {
+	if (data.model == "objectum.user") {
+		let n = 0;
+		
+		for (; resData.cols [n].code != "password"; n ++) {}
+		
+		resData.recs.forEach (rec => rec [n] = "");
+		return resData;
+	}
+	return true;
+};
+
+function _accessFilter ({store, model, alias}) {
+};
+
+function _accessCreate ({store, model, data}) {
+	return store.roleCode != "guest";
+};
+
+function _accessRead ({store, model, record}) {
+	let modelPath = model.getPath ();
+	
+	if (store.roleCode == "guest") {
+		if (modelPath == "objectum.user") {
+			return record.login == "guest";
+		}
+		return map.guest.read [modelPath];
+	}
+	return true;
+};
+
+function _accessUpdate ({store, model, record, data}) {
+	if (store.roleCode == "guest") {
+		return false;
+	}
+	if (store.roleCode == "user" && record.user != store.userId) {
+		return false;
+	}
+	return true;
+};
+
+function _accessDelete ({store, model, record}) {
+	if (store.roleCode == "guest") {
+		return false;
+	}
+	if (store.roleCode == "user" && record.user != store.userId) {
+		return false;
+	}
+	return true;
+};
+```
+</details>
+
+Методы:
+* _init - инициализация модуля при старте приложения
+* _accessData - вызывается при выполнении метода store.getData
+* _accessDataAfter - вызывается после выполнении метода store.getData. Можно изменить данные в ответе
+* _accessFilter - записи по каждой модели в запросе могут фильтроваться. Из метода возвращается фильтр
+* Доступ к записям:
+    * _accessCreate - гостю запрещено создавать записи 
+    * _accessRead - гостю можно читать только модели указанные в map.guest.read. Из записей по пользователям можно читать только свою 
+    * _accessUpdate, _accessDelete - гостю нельзя менять записи. Пользователю можно менять только свои записи
+
+Если метод возвращает true, то вызов метода разрешен.
+
+## Серверный код
+
+javascript код изоморфный потому нужна только инициализация безопасности и моделей с серверными методами.
+
+<details>
+  <summary>index.js</summary>
+  
+```js
+import Proxy from "objectum-proxy";
+import fs from "fs";
+import {fileURLToPath} from "url";
+import {dirname} from "path";
+
+import accessMethods from "./src/modules/access.js";
+
+const __filename = fileURLToPath (import.meta.url);
+const __dirname = dirname (__filename);
+const config = JSON.parse (fs.readFileSync ("./config.json", "utf8"));
+const proxy = new Proxy ();
+
+proxy.registerAdminMethods (
+	proxy.getOfficeMethods ({role: "user", smtp: config.smtp, secret: config.secret, secretKey: config.secretKey})
+);
+proxy.registerAccessMethods (accessMethods);
+
+proxy.start ({config, path: "/api", __dirname});
+```
+</details>
+
+proxy.getOfficeMethods - инициализация методов для регистрации пользователей.
+
+## PWA
+
+Добавляем манифест, который содержит название программы, иконки и другие параметры.
+manifest.json:
+```json
+{
+  "short_name": "Просторецепты",
+  "name": "Просторецепты",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+```
+
+Добавляемы необходимый для PWA файл. В данном проекте используется только для управления кэшем.  
+service-worker:
+```js
+let doCache = true;
+
+// Имя кэша
+let CACHE_NAME = "my-pwa-cache";
+
+// Очищает старый кэш
+self.addEventListener ("activate", event => {
+	const cacheWhitelist = [CACHE_NAME];
+	
+	event.waitUntil (
+		caches.keys ()
+		.then (keyList =>
+			Promise.all (keyList.map (key => {
+				if (!cacheWhitelist.includes (key)) {
+					console.log ("Deleting cache: " + key);
+					return caches.delete (key);
+				}
+			}))
+		)
+	);
+});
+// 'install' вызывается, как только пользователь впервые открывает PWA
+self.addEventListener ("install", function (event) {
+	if (doCache) {
+		event.waitUntil (
+			caches.open (CACHE_NAME)
+			.then (function (cache) {
+				// Получаем данные из манифеста (они кэшируются)
+				fetch ("/manifest.json")
+				.then (response => {
+					response.json ()
+				})
+				.then (assets => {
+					// Открываем и кэшируем нужные страницы и файлы
+					const urlsToCache = [
+						"/"
+					];
+					cache.addAll (urlsToCache)
+					console.log ("cached");
+				})
+			})
+		);
+	}
+});
+
+// Когда приложение запущено, сервис-воркер перехватывает запросы и отвечает на них данными из кэша, если они есть
+self.addEventListener ("fetch", function (event) {
+	if (doCache) {
+		event.respondWith (
+			caches.match (event.request).then (function (response) {
+				return response || fetch (event.request);
+			})
+		);
+	}
+});
+```
+
+## Заключение
+
+lighthouse
+
+yarn install
+
+Экспорт импорт
 
 
 
-Гостевой доступ
-
-Пользовательский доступ
