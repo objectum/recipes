@@ -1395,11 +1395,6 @@ self.addEventListener ("fetch", function (event) {
 
 ## Заключение
 
-lighthouse
-
-yarn install
-
-Экспорт импорт
-
-
+Показатели lighthouse достаточно неплохие, но надо учитывать что это react приложение.  
+![lighthouse](lighthouse.png)
 
