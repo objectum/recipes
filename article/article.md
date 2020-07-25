@@ -771,7 +771,7 @@ class Recipe extends Component {
     * Комментарии выводятся с помощью метода renderComments
 * renderComments - выводит комментарии. Новый комментарий добавляет с помощью onComment      
 
-## App
+### App
 
 <details>
   <summary>App.js</summary>
