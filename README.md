@@ -64,7 +64,7 @@ node import.js
 Run objectum:
 ```bash
 cd /opt/objectum/server
-node index.js
+node index-8200.js
 ```
 
 Create models, properties, queries, records:
