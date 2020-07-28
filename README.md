@@ -70,7 +70,7 @@ node index-8200.js
 Create models, properties, queries, records:
 ```bash
 cd /opt/objectum/projects/recipes
-objectum-cli --import-json recipes-cli.json --file-directory files
+objectum-cli --import-json scripts/recipes-cli.json --file-directory scripts/files
 ```
 
 Run project:
