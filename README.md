@@ -36,6 +36,7 @@ Install project:
 mkdir /opt/objectum/projects/recipes
 cd /opt/objectum/projects/recipes
 git clone https://github.com/objectum/recipes.git .
+npm i -g yarn
 yarn install
 npm run build
 cp -r /opt/objectum/projects/recipes/sample/* /opt/objectum/projects/recipes
