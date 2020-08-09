@@ -1,11 +1,11 @@
-# Создание PWA (Progressive Web Application) приложения на платформе objectum
+# Разработка PWA (Progressive Web Application) приложения на платформе Objectum
 
 ![logo](pwa.jpg)
 ![logo](objectum-logo.png)
 
 Предлагаю вашему вниманию реализацию PWA приложения на javascript платформе objectum.  
 Это полноценное приложение каталога рецептов.  
-Демо http://objectum.ru:4000  
+Онлайн-демо http://objectum.ru:4000  
 Исходный код https://github.com/objectum/recipes
   
 Спецификация:
@@ -16,6 +16,10 @@
     * Комментарии
     * Лайки, дизлайки
     * Привязка к пользователю
+* Поиск рецептов
+    * По названию
+    * Свои рецепты
+    * По лайкам    
 * Регистрация пользователей    
 
 ## Инициализация проекта objectum
@@ -320,14 +324,20 @@ objectum-cli --import-json recipes-cli.json --file-directory files
 
 ## Компоненты
 
+Понадобится добавить два компонента:
+* Recipes - список рецептов
+* Recipe - карточка рецепта
+
 ### Recipes - список рецептов
+
+Компонент состоит из тулбара, списка рецептов и пагинации. Тулбар содержит фильтры по наименованию, своим рецептам, лайкам, дизлайкам.
 
 ![logo](recipes.png)
 
 <details>
   <summary>Recipes.js</summary>
   
-```js
+```javascript
 import React, {Component} from "react";
 import {Link} from "react-router-dom";
 import {StringField, Action, Pagination} from "objectum-react";
@@ -580,8 +590,7 @@ class Recipes extends Component {
 };
 ```
 </details>
-
-Компонент состоит из тулбара, списка рецептов и пагинации. Тулбар содержит фильтры по наименованию, своим рецептам, лайкам, дизлайкам.  
+  
 Методы:
 * constructor - инициализируются параметры. Текущая страница 0, рецептов на странице показывать 10
 * load - загрузка рецептов, а также комментариев loadComments и лайков loadLikes
@@ -596,18 +605,16 @@ class Recipes extends Component {
 * renderRecipes - список рецептов
 * renderPagination - пагинация
 
-Редактирование рецепта:
-![logo](recipe-edit.png)
-
-
 ### Recipe - рецепт
+
+Компонент отображает рецепт с фото и комментариями.
 
 ![logo](recipe.png)
 
 <details>
   <summary>Recipe.js</summary>
   
-```js
+```javascript
 import React, {Component} from "react";
 import {Action, StringField} from "objectum-react";
 import RecipeModel from "../models/RecipeModel";
@@ -761,8 +768,7 @@ class Recipe extends Component {
 };
 ```
 </details>
-
-Компонент отображает рецепт с фото и комментариями.  
+  
 Методы:
 * componentDidMount - загружает данные по рецепту. Вызывает метод loadLikes
 * render - выводит информацию по рецепту 
@@ -773,10 +779,12 @@ class Recipe extends Component {
 
 ### App
 
+Заменяем рендер приложения по умолчанию на новый рендер onCustomRender. Автоматически авторизуем пользователя "Гость".
+
 <details>
   <summary>App.js</summary>
   
-```js
+```javascript
 import React, {Component} from "react";
 import {Store} from "objectum-client";
 import {ObjectumApp, ObjectumRoute, Navbar, Office, Loading} from "objectum-react";
@@ -888,12 +896,6 @@ class App extends Component {
 			password: require ("crypto").createHash ("sha1").update ("guest").digest ("hex").toUpperCase (),
 			iconsTop: true
 		};
-		if (process.env.NODE_ENV === "development") {
-			props.__username = "admin";
-			props.__password = require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ();
-			props._username = "ivanov@ivanov.ivanov";
-			props._password = require ("crypto").createHash ("sha1").update ("1").digest ("hex").toUpperCase ();
-		}
 		return (
 			<ObjectumApp {...props}>
 				<ObjectumRoute exact path="/" render={props => <Recipes {...props} store={store} />} />
@@ -909,23 +911,27 @@ class App extends Component {
 ```
 </details>
 
-Компонент заменяет рендер приложения по умолчанию. Новый рендер onCustomRender. Автоматически авторизуется под пользователем "Гость".
 Методы:
 * constructor - регистрация моделей
 * onConnect - вызывается при подключении к хранилищу. Сохраняет в состояние запись пользователя
-* onDisconnect - при отключении пользователя авторизуется под гостем
+* onDisconnect - при отключении пользователя авторизуемся под гостем
 
-Регистрация пользователя:
+По кнопке "Вход" используется компонент Office, где возможна регистрация пользователя, вход и восстановление пароля:
+
 ![logo](registration.png)
 
 ## Модели
 
+Добавляем исходный код моделей для улучшения внешнего вида и некоторые действия.
+
 ### RecipeCommentModel
+
+Модель: Комментарий.
 
 <details>
   <summary>RecipeCommentModel.js</summary>
   
-```js
+```javascript
 import React from "react";
 import {Record} from "objectum-client";
 
@@ -962,10 +968,12 @@ class RecipeCommentModel extends Record {
 
 ### RecipeLikeModel
 
+Модель: Лайк.
+
 <details>
   <summary>RecipeLikeModel.js</summary>
   
-```js
+```javascript
 import React from "react";
 import {Record} from "objectum-client";
 
@@ -1005,10 +1013,12 @@ class RecipeLikeModel extends Record {
 
 ### RecipePhotoModel
 
+Модель: Фото.
+
 <details>
   <summary>RecipePhotoModel.js</summary>
   
-```js
+```javascript
 import React from "react";
 import {Record} from "objectum-client";
 
@@ -1042,10 +1052,15 @@ class RecipePhotoModel extends Record {
 
 ### RecipeModel
 
+Модель: Рецепт.  
+
+Редактирование рецепта:
+![logo](recipe-edit.png)
+
 <details>
   <summary>RecipeModel.js</summary>
   
-```js
+```javascript
 import React from "react";
 import {Record} from "objectum-client";
 
@@ -1173,7 +1188,7 @@ class RecipeModel extends Record {
 <details>
   <summary>RecipeModel.js</summary>
   
-```js
+```javascript
 let map = {
 	"guest": {
 		"data": {
@@ -1277,7 +1292,7 @@ javascript код изоморфный потому нужна только ин
 <details>
   <summary>index.js</summary>
   
-```js
+```javascript
 import Proxy from "objectum-proxy";
 import fs from "fs";
 import {fileURLToPath} from "url";
@@ -1300,6 +1315,10 @@ proxy.start ({config, path: "/api", __dirname});
 </details>
 
 proxy.getOfficeMethods - инициализация методов для регистрации пользователей.
+* role - пользователей какой роли регистрируем (код)
+* smtp - параметры для отправки писем
+* secret - "соль" строка.
+* secretKey - приватный ключ для google recaptcha
 
 ## PWA
 
@@ -1334,8 +1353,8 @@ manifest.json:
 ```
 
 Добавляемы необходимый для PWA файл. В данном проекте используется только для управления кэшем.  
-service-worker:
-```js
+service-worker ([взял отсюда]([https://habr.com/ru/company/mailru/blog/450504])):
+```javascript
 let doCache = true;
 
 // Имя кэша
@@ -1395,6 +1414,8 @@ self.addEventListener ("fetch", function (event) {
 
 ## Заключение
 
+Как видите кода понадобилось немного.   
 Показатели lighthouse неплохие, но надо учитывать что это react приложение.  
 ![lighthouse](lighthouse.png)
 
+Спасибо за внимание.
